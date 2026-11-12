@@ -1,6 +1,19 @@
-# YT-RAG Local
+<p align="center">
+  <img src="docs/images/banner.svg" alt="YT-RAG Local : transformez une chaîne YouTube en corpus texte, entièrement sur votre PC" width="100%">
+</p>
 
-**Transformez une chaîne YouTube en corpus texte exploitable par une IA, entièrement sur votre PC.**
+<p align="center">
+  <a href="LICENSE"><img alt="Licence MIT" src="https://img.shields.io/badge/licence-MIT-23563d"></a>
+  <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows&logoColor=white">
+  <img alt="NVIDIA CUDA 12.8" src="https://img.shields.io/badge/NVIDIA-CUDA%2012.8-76B900?logo=nvidia&logoColor=white">
+  <img alt="Node.js 24.2+" src="https://img.shields.io/badge/Node.js-24.2%2B-339933?logo=nodedotjs&logoColor=white">
+  <img alt="Python 3.11–3.13" src="https://img.shields.io/badge/Python-3.11%E2%80%933.13-3776AB?logo=python&logoColor=white">
+  <img alt="100 % local" src="https://img.shields.io/badge/inf%C3%A9rence-100%20%25%20locale-23563d">
+</p>
+
+<p align="center">
+  <b>Transformez une chaîne YouTube en corpus texte exploitable par une IA, entièrement sur votre PC.</b>
+</p>
 
 YT-RAG Local télécharge des vidéos YouTube, les transcrit mot à mot avec horodatage, décrit ce qu'on y voit à l'écran, puis exporte le tout en Markdown, JSON et JSONL, prêt à être injecté dans un RAG, un assistant ou un moteur de recherche. Aucune clé API, aucun service cloud : les modèles tournent sur votre carte graphique NVIDIA.
 
@@ -11,10 +24,15 @@ YT-RAG Local télécharge des vidéos YouTube, les transcrit mot à mot avec hor
 - 📦 **Exports** Markdown lisible, JSON structuré, corpus JSONL et téléchargement ZIP
 - 📈 **Journal en direct** avec barres de progression et temps restant, dans le terminal et dans l'interface
 
+<p align="center">
+  <img src="docs/images/screenshot-channel.png" alt="Page d’une chaîne : vidéos transcrites ou à traiter, sélection multiple" width="100%">
+</p>
+
 > Le téléchargement des vidéos et l'installation initiale des modèles nécessitent Internet. Toute l'inférence se fait ensuite en local.
 
 ## Sommaire
 
+- [Aperçu](#aperçu)
 - [Configuration requise](#configuration-requise)
 - [Installation](#installation)
 - [Utilisation](#utilisation)
@@ -24,6 +42,25 @@ YT-RAG Local télécharge des vidéos YouTube, les transcrit mot à mot avec hor
 - [Journal du traitement](#journal-du-traitement)
 - [Développement et tests](#développement-et-tests)
 - [Crédits](#crédits)
+
+## Aperçu
+
+<p align="center">
+  <img src="docs/images/pipeline.svg" alt="Pipeline : YouTube, yt-dlp et FFmpeg, puis Qwen3-ASR pour l’audio et Qwen3.5 pour l’image, fusionnés en Markdown, JSON et JSONL" width="100%">
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/screenshot-library.png" alt="Bibliothèque : une carte par chaîne avec le nombre de vidéos transcrites"></td>
+    <td width="50%"><img src="docs/images/screenshot-run.png" alt="Traitement en cours : progression vidéo par vidéo et journal en direct"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Bibliothèque</b> : une carte par chaîne ou playlist</td>
+    <td align="center"><b>Traitement</b> : pause, reprise et journal en direct</td>
+  </tr>
+</table>
+
+<sub>Captures réalisées avec des chaînes fictives et des moteurs simulés (<code>npm run docs:screenshots</code>).</sub>
 
 ## Configuration requise
 
@@ -176,6 +213,7 @@ npm run build
 npm run smoke:media      # FFmpeg réel sur des clips générés
 npm run smoke:processors # vrais processeurs audio/vidéo, sans les poids
 npm run smoke:ui         # interface dans Edge avec moteurs simulés (après un build)
+npm run docs:screenshots # régénère les captures du README (docs/images)
 ```
 
 Les tests ne nécessitent pas les poids des modèles. Ils couvrent le schéma JSON, les exports, la bibliothèque, la pause et la reprise, les caches et les horodatages ; ils ne mesurent pas la qualité de transcription ou de vision.

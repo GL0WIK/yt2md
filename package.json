@@ -23,6 +23,7 @@
     "smoke:media": "python -X utf8 scripts/smoke_media.py",
     "smoke:processors": "tsx scripts/python.ts processors",
     "smoke:ui": "tsx scripts/smoke_ui.ts",
+    "docs:screenshots": "tsx scripts/screenshots.ts",
     "format": "prettier --write server client scripts docs README.md *.json *.ts",
     "format:check": "prettier --check server client scripts docs README.md *.json *.ts"
   },
