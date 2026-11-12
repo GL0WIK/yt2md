@@ -1,0 +1,6 @@
+triton-windows==3.6.0.post26
+flash-linear-attention==0.5.2
+fla-core==0.5.2
+einops==0.8.2
+xgrammar==0.2.8
+apache-tvm-ffi==0.1.14.post1

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "2.0",
+  "videoId": "EXAMPLE0001",
+  "contentHash": "7dd6086d4fb0aafe146d4d4321efe3791a88fd28d5643a567e1c325ee0628735",
+  "generatedAt": "2026-09-16T00:00:00.000Z",
+  "provenance": {
+    "runId": "exemple-synthetique",
+    "model": "exemple-synthetique",
+    "promptVersion": "corpus-v2.5",
+    "fps": 1,
+    "mediaResolution": "MEDIA_RESOLUTION_HIGH",
+    "chunkSeconds": null,
+    "transcriptionSource": "gemini_video",
+    "timestampAccuracy": "model_estimated_seconds",
+    "speakerScope": "chunk"
+  },
+  "source": {
+    "title": "Exemple synthétique — mesure d’une pièce",
+    "url": "https://www.youtube.com/watch?v=EXAMPLE0001",
+    "channel": "Exemple fictif",
+    "publicationDate": null,
+    "durationSeconds": 8
+  },
+  "publicStats": {
+    "views": null,
+    "likes": null,
+    "comments": null
+  },
+  "youtubeDescription": "Exemple de format, sans vidéo source réelle.",
+  "transcript": [
+    {
+      "speaker": "Invité",
+      "timestamp": "00:00",
+      "text": "Cette pièce mesure deux mètres quarante.",
+      "endTimestamp": "00:03",
+      "chunkIndex": 1,
+      "id": "EXAMPLE0001:t00001",
+      "startSeconds": 0,
+      "endSeconds": 3,
+      "speakerId": "EXAMPLE0001:c1:voice1"
+    }
+  ],
+  "visualSegments": [
+    {
+      "timestamp": "00:00",
+      "endTimestamp": "00:05",
+      "title": "Mesure d’une pièce",
+      "visualDescription": "Une personne déplie un mètre le long d’une pièce rectangulaire sur un établi. Les graduations ne sont pas lisibles.",
+      "screenText": [],
+      "uncertainties": ["La mesure n’est pas lisible dans l’image."],
+      "chunkIndex": 1,
+      "id": "EXAMPLE0001:v00001",
+      "startSeconds": 0,
+      "endSeconds": 5
+    },
+    {
+      "timestamp": "00:05",
+      "endTimestamp": "00:08",
+      "title": "Réglage affiché",
+      "visualDescription": "Un écran affiche un panneau de réglage avec un champ numérique.",
+      "screenText": ["Largeur : 2400 mm"],
+      "uncertainties": [],
+      "chunkIndex": 1,
+      "id": "EXAMPLE0001:v00002",
+      "startSeconds": 5,
+      "endSeconds": 8
+    }
+  ],
+  "quality": {
+    "reviewRequired": true,
+    "warnings": ["1 limite(s) d’observation signalée(s) dans les segments visuels."],
+    "visualCoverageRatio": 1,
+    "visualGaps": [],
+    "inaudibleEntries": 0,
+    "missingSpeechEndTimes": 0,
+    "visualUncertainties": 1
+  }
+}

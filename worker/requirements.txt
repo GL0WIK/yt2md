@@ -1,0 +1,19 @@
+# PyTorch CUDA est installé séparément par scripts/setup_runtime.py.
+torch==2.11.0
+torchaudio==2.11.0
+torchvision==0.26.0
+transformers==5.19.0
+# torch.compile de Qwen3-ASR (ASR_COMPILE) ; Linux reçoit Triton avec PyTorch.
+triton-windows==3.6.0.post26; sys_platform == "win32"
+accelerate>=1.10,<2
+bitsandbytes==0.50.2
+qwen-vl-utils==0.0.14
+lm-format-enforcer==0.11.3
+silero-vad==6.2.3
+onnxruntime>=1.22,<2
+numpy>=2.0,<3
+soundfile>=0.13,<1
+librosa>=0.11,<1
+pillow>=11,<13
+huggingface-hub>=1.0,<2
+yt-dlp[default]>=2026.9.25

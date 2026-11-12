@@ -1,0 +1,64 @@
+{
+  "name": "yt-rag-local",
+  "version": "1.0.0",
+  "description": "Transcription et analyse visuelle locales de chaînes YouTube pour construire un corpus RAG",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --exclude \"client/**\" scripts/dev.ts",
+    "dev:server": "tsx watch server/src/index.ts",
+    "dev:client": "vite --config vite.config.ts",
+    "build": "npm run typecheck && tsc -p tsconfig.server.json && vite build --config vite.config.ts",
+    "start": "node dist/server/index.js",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.server.json --noEmit && tsc -p client/tsconfig.json --noEmit && tsc -p tsconfig.tests.json",
+    "check": "npm run typecheck && npm test && npm run test:python",
+    "test:python": "python -X utf8 -m unittest discover -s worker/tests -v",
+    "python:setup": "python scripts/setup_runtime.py",
+    "models:download": "tsx scripts/python.ts download",
+    "doctor": "tsx scripts/doctor.ts",
+    "schema:generate": "tsx scripts/schema.ts",
+    "exports:refresh": "tsx scripts/refresh_exports.ts",
+    "smoke:media": "python -X utf8 scripts/smoke_media.py",
+    "smoke:processors": "tsx scripts/python.ts processors",
+    "smoke:ui": "tsx scripts/smoke_ui.ts",
+    "format": "prettier --write server client scripts docs README.md *.json *.ts",
+    "format:check": "prettier --check server client scripts docs README.md *.json *.ts"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "yazl": "^3.3.1",
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.25.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/supertest": "^6.0.3",
+    "@types/yazl": "^3.3.1",
+    "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
+    "prettier": "^3.9.7",
+    "supertest": "^7.1.4",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4",
+    "vitest": "^4.0.14",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=24.2.0"
+  },
+  "overrides": {
+    "esbuild": "^0.28.2"
+  }
+}
