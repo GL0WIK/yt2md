@@ -147,7 +147,7 @@ export async function streamZip(root: string, filenames: string[], res: Response
     return reader;
   });
   zip.on("error", (error) => output.destroy(error));
-  res.attachment("yt-rag-local.zip").type("application/zip");
+  res.attachment("yt2md.zip").type("application/zip");
   zip.end();
   try {
     await pipeline(output, res);

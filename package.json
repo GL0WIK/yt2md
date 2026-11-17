@@ -1,5 +1,5 @@
 {
-  "name": "yt-rag-local",
+  "name": "yt2md",
   "version": "1.0.0",
   "description": "Transcription et analyse visuelle locales de chaînes YouTube pour construire un corpus RAG",
   "license": "MIT",

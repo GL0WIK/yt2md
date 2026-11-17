@@ -7,7 +7,7 @@ describe("external process bounds", () => {
     );
   });
   it("handles missing executables", async () => {
-    await expect(runProcess("yt-rag-nonexistent-executable", [], 1000)).rejects.toThrow(
+    await expect(runProcess("yt2md-nonexistent-executable", [], 1000)).rejects.toThrow(
       "Impossible de démarrer",
     );
   });

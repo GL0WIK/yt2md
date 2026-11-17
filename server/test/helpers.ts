@@ -6,14 +6,14 @@ const root = path.join(PROJECT_ROOT, ".test-tmp");
 const directories: string[] = [];
 export async function temporaryDirectory() {
   await fs.mkdir(root, { recursive: true });
-  const directory = await fs.mkdtemp(path.join(root, "yt-rag-test-"));
+  const directory = await fs.mkdtemp(path.join(root, "yt2md-test-"));
   directories.push(directory);
   return directory;
 }
 afterEach(async () => {
   for (const directory of directories.splice(0)) {
     const resolved = path.resolve(directory);
-    if (path.dirname(resolved) !== path.resolve(root) || !path.basename(resolved).startsWith("yt-rag-test-"))
+    if (path.dirname(resolved) !== path.resolve(root) || !path.basename(resolved).startsWith("yt2md-test-"))
       throw new Error("Unsafe test cleanup path");
     await fs.rm(resolved, { recursive: true, force: true });
   }

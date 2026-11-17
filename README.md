@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/banner.svg" alt="YT-RAG Local : transformez une chaîne YouTube en corpus texte, entièrement sur votre PC" width="100%">
+  <img src="docs/images/banner.svg" alt="YT2MD : transformez une chaîne YouTube en corpus texte, entièrement sur votre PC" width="100%">
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
   <b>Transformez une chaîne YouTube en corpus texte exploitable par une IA, entièrement sur votre PC.</b>
 </p>
 
-YT-RAG Local télécharge des vidéos YouTube, les transcrit mot à mot avec horodatage, décrit ce qu'on y voit à l'écran, puis exporte le tout en Markdown, JSON et JSONL, prêt à être injecté dans un RAG, un assistant ou un moteur de recherche. Aucune clé API, aucun service cloud : les modèles tournent sur votre carte graphique NVIDIA.
+YT2MD télécharge des vidéos YouTube, les transcrit mot à mot avec horodatage, décrit ce qu'on y voit à l'écran, puis exporte le tout en Markdown, JSON et JSONL, prêt à être injecté dans un RAG, un assistant ou un moteur de recherche. Aucune clé API, aucun service cloud : les modèles tournent sur votre carte graphique NVIDIA.
 
 - 🎙️ **Transcription** avec Qwen3-ASR, langue imposée (français par défaut) et horodatage de chaque mot
 - 👁️ **Analyse visuelle** avec Qwen3.5-9B : description de l'image et du texte affiché, toutes les 7 secondes
@@ -76,8 +76,8 @@ YT-RAG Local télécharge des vidéos YouTube, les transcrit mot à mot avec hor
 ## Installation
 
 ```powershell
-git clone https://github.com/lfpoulain/yt-rag-local.git
-cd yt-rag-local
+git clone https://github.com/lfpoulain/yt2md.git
+cd yt2md
 npm install
 Copy-Item .env.example .env
 npm run python:setup
@@ -126,7 +126,7 @@ Toutes les données restent dans le dossier du projet (`outputs/`, `cache/`, `lo
 
 ### Format JSON
 
-Les fichiers `video--ID.json` suivent le schéma 2.0 de YT-RAG (`docs/corpus.schema.json`, exemple dans `docs/examples/video.json`) : `source`, `publicStats`, `youtubeDescription`, `transcript`, `visualSegments`, `quality`… Pour rester compatibles avec les consommateurs de ce schéma, quelques constantes historiques sont conservées telles quelles, comme `provenance.transcriptionSource: "gemini_video"`, alors qu'aucun service externe n'est appelé. `provenance.model` indique les modèles locaux réellement utilisés ; les détails complets sont dans `video--ID.local.json`, qui n'est pas incorporé au corpus JSONL.
+Les fichiers `video--ID.json` suivent le schéma 2.0 hérité du projet YT-RAG d'origine (`docs/corpus.schema.json`, exemple dans `docs/examples/video.json`) : `source`, `publicStats`, `youtubeDescription`, `transcript`, `visualSegments`, `quality`… Pour rester compatibles avec les consommateurs de ce schéma, quelques constantes historiques sont conservées telles quelles, comme `provenance.transcriptionSource: "gemini_video"`, alors qu'aucun service externe n'est appelé. `provenance.model` indique les modèles locaux réellement utilisés ; les détails complets sont dans `video--ID.local.json`, qui n'est pas incorporé au corpus JSONL.
 
 Le JSON principal stocke les temps en secondes entières. Il n'y a pas de diarisation : `speaker` vaut `Indéterminé` et `speakerId` vaut `null`.
 

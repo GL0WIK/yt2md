@@ -9,7 +9,7 @@ const server = app.listen(config.port, config.host, () =>
     {},
     () =>
       logEvent("server.started", {
-        message: `yt-rag local : http://${config.host}:${config.port}`,
+        message: `YT2MD : http://${config.host}:${config.port}`,
         logsDir: config.logsDir,
         asrModel: config.asrModel,
         asrLanguage: config.asrLanguage,

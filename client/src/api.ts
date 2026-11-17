@@ -88,7 +88,7 @@ export async function deleteExports(videoIds: string[]): Promise<DeleteExportsRe
   if (data && Array.isArray(data.deleted) && data.failed?.length) return data;
   throw new Error(await errorMessage(response));
 }
-export async function downloadExportsZip(filenames: string[], name = "yt-rag-local.zip") {
+export async function downloadExportsZip(filenames: string[], name = "yt2md.zip") {
   const response = await fetch("/api/outputs/export-zip", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

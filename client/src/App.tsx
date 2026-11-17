@@ -120,7 +120,7 @@ export default function App() {
         <a className="brand" href={routeHref({ page: "library" })}>
           <span className="brand-mark">YT</span>
           <span>
-            <strong>YT-RAG</strong>
+            <strong>YT2MD</strong>
             <small>transcription locale</small>
           </span>
         </a>
