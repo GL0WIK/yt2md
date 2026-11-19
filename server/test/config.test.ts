@@ -10,8 +10,6 @@ describe("isolated local configuration", () => {
     expect(config.asrModel).toBe("Qwen/Qwen3-ASR-1.7B-hf");
     expect(config.asrAlignerModel).toBe("Qwen/Qwen3-ForcedAligner-0.6B-hf");
     expect(config.asrContext).toBe("title");
-    expect(config.asrCompile).toBe(true);
-    expect(getConfig({ ASR_COMPILE: "false" }).asrCompile).toBe(false);
     expect(config.asrLanguage).toBe("fr");
     expect(getConfig({ ASR_LANGUAGE: "auto" }).asrLanguage).toBe("auto");
     expect(config.visionModel).toBe("Qwen/Qwen3.5-9B");
@@ -27,6 +25,15 @@ describe("isolated local configuration", () => {
     expect(config.audioChunkSeconds).toBe(60);
     expect(config.audioOverlapSeconds).toBe(1);
     expect(Object.keys(config)).not.toContain("audioMaxNewTokens");
+  });
+  it("targets Apple Silicon: MPS device, no CUDA setting, no NF4, torch.compile off by default", () => {
+    const config = getConfig({});
+    expect(config.device).toBe("mps");
+    expect(getConfig({ DEVICE: "cuda:0" }).device).toBe("mps");
+    expect(config.asrCompile).toBe(false);
+    expect(getConfig({ ASR_COMPILE: "true" }).asrCompile).toBe(true);
+    expect(config.visionQuantization).toBe("bf16");
+    expect(() => getConfig({ VISION_QUANTIZATION: "nf4" })).toThrow("VISION_QUANTIZATION");
   });
   it("passes YouTube cookies to yt-dlp only when configured", async () => {
     const directory = await temporaryDirectory();

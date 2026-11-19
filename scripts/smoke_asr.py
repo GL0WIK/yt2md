@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--language", default="fr", help="Code ISO ou auto")
     parser.add_argument("--context", default="", help="Contexte facultatif (titre, noms propres)")
     parser.add_argument("--models-dir", default="models")
-    parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--device", default="mps")
     args = parser.parse_args()
     if not 1 <= args.seconds <= 200 or args.start < 0:
         parser.error("--seconds doit être entre 1 et 200, --start positif")
@@ -36,7 +36,7 @@ def main():
              for role in ("asr", "aligner")}
     config = {"modelsDir": str(model_dir), "device": args.device, "asrLanguage": args.language,
               "asrModel": locks["asr"]["modelId"], "asrAlignerModel": locks["aligner"]["modelId"],
-              "visionQuantization": "nf4"}
+              "visionQuantization": "bf16"}
     local_environment(config)
     destination = within_project(ROOT / ".smoke-tmp/asr")
     destination.mkdir(parents=True, exist_ok=True)

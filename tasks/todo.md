@@ -55,13 +55,13 @@ Contexte et décisions : `tasks/plan.md`.
 **Description :** `config.ts` ne lit plus `DEVICE` et fixe `device: "mps"`. `ASR_COMPILE` vaut `false` par défaut (pas de Triton sur macOS). Dans le worker, les `torch.cuda.*` deviennent leurs équivalents `torch.mps.*` (`empty_cache`, `current_allocated_memory`, `driver_allocated_memory`, `recommended_max_memory`) dans `gpu_fields`, `unload`, `load` et `doctor`. `doctor` vérifie `torch.backends.mps.is_available()`. Le backend vision `transformers` en NF4 (bitsandbytes) n'existe plus : seul `llama_cpp` reste, avec BF16 en option.
 
 **Critères d'acceptation :**
-- [ ] `config.ts` : plus de `DEVICE` ni de validation `cuda:N`. `VISION_QUANTIZATION` n'accepte plus `nf4`
-- [ ] `npm run doctor` sur le Mac renvoie `gpu` renseigné (Apple M1 Pro, mémoire) et ne signale plus d'erreur CUDA, Triton ou bitsandbytes. Il ne doit rester que « modèles absents »
-- [ ] `grep -rn "torch.cuda" worker scripts` ne renvoie rien
+- [x] `config.ts` : plus de `DEVICE` ni de validation `cuda:N`. `VISION_QUANTIZATION` n'accepte plus `nf4`
+- [x] `npm run doctor` sur le Mac renvoie `gpu` renseigné (Apple M1 Pro, mémoire) et ne signale plus d'erreur CUDA, Triton ou bitsandbytes. Il ne doit rester que « modèles absents »
+- [x] `grep -rn "torch.cuda" worker scripts` ne renvoie rien, sauf `vision_monitor.py`, réécrit en T6 (inactif d'ici là : la garde ne s'applique plus qu'au NF4 supprimé)
 
 **Vérification :**
-- [ ] Tests existants adaptés : les faux `torch.cuda` deviennent de faux `torch.mps` (`test_logging.py`, `test_vision_generation.py`, `test_vision_monitor.py`)
-- [ ] `npm test && npm run test:python && npm run typecheck`
+- [x] Tests existants adaptés : les faux `torch.cuda` deviennent de faux `torch.mps` (`test_logging.py`, `test_vision_generation.py`, `test_vision_monitor.py`)
+- [x] `npm test && npm run test:python && npm run typecheck`
 
 **Dépendances :** T2
 

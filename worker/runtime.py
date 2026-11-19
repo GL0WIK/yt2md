@@ -8,6 +8,7 @@ from importlib.metadata import PackageNotFoundError, version
 import json
 import math
 from pathlib import Path
+import subprocess
 import sys
 import wave
 
@@ -63,14 +64,21 @@ def asr_token_budget(seconds: float, attempt: int = 0) -> int:
 
 
 def gpu_fields(torch, device: str) -> dict:
+    # Unified memory: Metal's recommended working set is the GPU budget; the driver total includes caches.
     try:
-        free, total = torch.cuda.mem_get_info(device)
-        return {"vramFreeBytes": free, "vramTotalBytes": total,
-                "vramAllocatedBytes": torch.cuda.memory_allocated(device),
-                "vramReservedBytes": torch.cuda.memory_reserved(device),
-                "vramPeakAllocatedBytes": torch.cuda.max_memory_allocated(device)}
+        total, reserved = torch.mps.recommended_max_memory(), torch.mps.driver_allocated_memory()
+        return {"vramFreeBytes": max(0, total - reserved), "vramTotalBytes": total,
+                "vramAllocatedBytes": torch.mps.current_allocated_memory(), "vramReservedBytes": reserved}
     except Exception:
         return {}
+
+
+def chip_name() -> str:
+    try:
+        return subprocess.run(["sysctl", "-n", "machdep.cpu.brand_string"], capture_output=True, text=True,
+                              timeout=5, check=True).stdout.strip() or "Apple Silicon"
+    except (OSError, subprocess.SubprocessError):
+        return "Apple Silicon"
 
 VISUAL_SCHEMA = {
     "type": "object",
@@ -199,7 +207,7 @@ def doctor(config: dict, *, check_gpu: bool = True) -> dict:
     missing = []
     for package, module in [("torch", "torch"), ("torchaudio", "torchaudio"), ("torchvision", "torchvision"),
                             ("transformers", "transformers"), ("accelerate", "accelerate"),
-                            ("qwen-vl-utils", "qwen_vl_utils"), ("bitsandbytes", "bitsandbytes"),
+                            ("qwen-vl-utils", "qwen_vl_utils"),
                             ("lm-format-enforcer", "lmformatenforcer"), ("silero-vad", "silero_vad"),
                             ("onnxruntime", "onnxruntime"), ("soundfile", "soundfile")]:
         try:
@@ -211,21 +219,20 @@ def doctor(config: dict, *, check_gpu: bool = True) -> dict:
     if missing:
         issues.append("Dépendances manquantes : " + ", ".join(missing) + ". Exécuter npm run python:setup.")
     if config.get("asrCompile") and not compile_available():
-        issues.append("Triton manquant pour ASR_COMPILE=true : exécuter npm run python:setup, ou définir ASR_COMPILE=false.")
+        issues.append("Triton absent pour ASR_COMPILE=true (pas de Triton sur macOS) : définir ASR_COMPILE=false.")
     if check_gpu and "torch" in packages:
         try:
             import torch
-            device = int(config["device"].split(":")[1])
-            if torch.cuda.is_available() and device < torch.cuda.device_count():
-                free, total = torch.cuda.mem_get_info(device)
-                gpu = {"name": torch.cuda.get_device_name(device), "totalVramBytes": total, "freeVramBytes": free,
-                       "torchCuda": torch.version.cuda}
+            if torch.backends.mps.is_available():
+                memory = gpu_fields(torch, "mps")
+                gpu = {"name": chip_name(), "totalVramBytes": memory.get("vramTotalBytes", 0),
+                       "freeVramBytes": memory.get("vramFreeBytes", 0)}
             else:
-                issues.append("GPU CUDA indisponible. Vérifier PyTorch CUDA et le pilote NVIDIA.")
+                issues.append("GPU Apple (MPS) indisponible : macOS 14 ou plus récent sur Apple Silicon requis.")
         except Exception as error:
-            issues.append("Initialisation CUDA impossible : " + str(error))
+            issues.append("Initialisation MPS impossible : " + str(error))
     elif check_gpu:
-        issues.append("PyTorch CUDA n’est pas encore installé.")
+        issues.append("PyTorch n’est pas encore installé. Exécuter npm run python:setup.")
     if "transformers" in packages:
         try:
             from transformers import AutoModelForMultimodalLM, AutoModelForTokenClassification, AutoProcessor
@@ -270,8 +277,8 @@ class LocalRuntime:
         gc.collect()
         if importlib.util.find_spec("torch"):
             import torch
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
+            if torch.backends.mps.is_available():
+                torch.mps.empty_cache()
                 if previous:
                     event("model.unload.complete", "Modèle déchargé.", role=previous, **gpu_fields(torch, self.config["device"]))
 
@@ -284,7 +291,6 @@ class LocalRuntime:
             from native_vision import NativeVision
             import torch
             from vision_monitor import check_vision_memory
-            torch.cuda.set_device(self.config["device"])
             check_vision_memory(torch, self.config)
             self.native = NativeVision(self.config, self.locks["vision"]["native"])
             with stage("model.load", "Chargement de Qwen sur le moteur CUDA natif.",
@@ -294,16 +300,14 @@ class LocalRuntime:
             event("model.ready", "Modèle vidéo natif prêt pour l’inférence.", role=role, backend="llama_cpp")
             return
         import torch
-        from transformers import AutoProcessor, AutoModelForMultimodalLM, AutoModelForTokenClassification, BitsAndBytesConfig
-        if not torch.cuda.is_available():
-            raise RuntimeError("L’inférence requiert PyTorch CUDA. Exécuter npm run python:setup.")
-        torch.cuda.set_device(self.config["device"])
+        from transformers import AutoProcessor, AutoModelForMultimodalLM, AutoModelForTokenClassification
+        if not torch.backends.mps.is_available():
+            raise RuntimeError("L’inférence requiert le GPU Apple (MPS). Exécuter npm run python:setup.")
         if role == "vision":
             from vision_monitor import check_vision_memory
             check_vision_memory(torch, self.config)
         kwargs = {"dtype": torch.bfloat16, "device_map": {"": self.config["device"]},
                   "local_files_only": True, "trust_remote_code": False, "attn_implementation": "sdpa"}
-        torch.cuda.reset_peak_memory_stats(self.config["device"])
         if role == "asr":
             # Both small models stay on the GPU for the whole audio stage: transcription, then alignment.
             for part, cls in [("asr", AutoModelForMultimodalLM), ("aligner", AutoModelForTokenClassification)]:
@@ -325,10 +329,6 @@ class LocalRuntime:
             folder = self.locks[role]["path"]
             with stage("model.processor.load", "Chargement du processeur local.", role=role):
                 self.processor = AutoProcessor.from_pretrained(folder, local_files_only=True, trust_remote_code=False)
-            if self.config["visionQuantization"] == "nf4":
-                kwargs["quantization_config"] = BitsAndBytesConfig(
-                    load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_use_double_quant=True,
-                    bnb_4bit_compute_dtype=torch.bfloat16)
             with stage("model.load", "Chargement des poids sur le GPU.", role=role,
                        modelId=self.locks[role]["modelId"], quantization=self.config["visionQuantization"],
                        heartbeat_fields=lambda: gpu_fields(torch, self.config["device"])):
@@ -386,7 +386,6 @@ class LocalRuntime:
         if not spans:
             event("audio.silence", "Aucune parole détectée ; transcription ignorée pour ce morceau.")
             return {"text": "", "words": [], "speechDetected": False, "inputTokens": 0, "outputTokens": 0}
-        torch.cuda.reset_peak_memory_stats(self.config["device"])
         clips = [samples[start:end] for start, end in spans]
         # A retry decodes one segment at a time with a doubled budget: no padding, no shared batch.
         batch_size = 1 if attempt else ASR_BATCH_SIZE
@@ -504,7 +503,6 @@ class LocalRuntime:
         import torch
         from json_constraint import tokenizer_data, json_prefix
         schema = generation_schema(attempt)
-        torch.cuda.reset_peak_memory_stats(self.config["device"])
         with stage("vision.inputs", "Préparation de l’entrée vidéo native et du contexte audio.",
                    inputFrames=len(frames), audioContextEntries=len(context), maxPixels=self.config["visionMaxPixels"]):
             inputs = video_inputs(self.processor, frame_paths, frames, context, total_frames, self.config, schema)

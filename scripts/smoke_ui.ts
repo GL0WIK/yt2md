@@ -28,7 +28,6 @@ const worker: LocalWorker = {
       name: "RTX 5090 (test)",
       totalVramBytes: 32 * 1024 ** 3,
       freeVramBytes: 30 * 1024 ** 3,
-      torchCuda: "12.8",
     },
   }),
   async analyze(_video, signal, progress) {

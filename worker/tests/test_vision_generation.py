@@ -44,14 +44,14 @@ class VisionGenerationTests(unittest.TestCase):
             # chat EOS, the base checkpoint continues to the token limit.
             return Output(20 if kwargs.get("eos_token_id", 248044) == 248046 else kwargs["max_new_tokens"])
 
-        runtime = LocalRuntime({"device": "cuda:0", "visionMaxPixels": 393216, "visionMaxNewTokens": 1024}, {})
+        runtime = LocalRuntime({"device": "mps", "visionMaxPixels": 393216, "visionMaxNewTokens": 1024}, {})
         runtime.role = "vision"
-        runtime.model = SimpleNamespace(device="cuda:0", generate=generate)
+        runtime.model = SimpleNamespace(device="mps", generate=generate)
         runtime.processor = SimpleNamespace(
             tokenizer=SimpleNamespace(eos_token_id=248046, pad_token_id=248044),
             batch_decode=lambda *a, **kw: ['{"title":"Plan","visualDescription":"Un écran.","screenText":[],"uncertainties":[]}'])
         runtime.tokenizer_data = object()
-        torch = SimpleNamespace(cuda=SimpleNamespace(reset_peak_memory_stats=lambda device: None), inference_mode=nullcontext)
+        torch = SimpleNamespace(inference_mode=nullcontext)
         decoder = SimpleNamespace(tokenizer_data=lambda tokenizer: None, json_prefix=lambda *args: None)
         with patch.dict(sys.modules, {"torch": torch, "json_constraint": decoder}), \
              patch("runtime.video_inputs", return_value=Inputs(input_ids=SimpleNamespace(shape=(1, 10)))), \

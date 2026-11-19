@@ -43,7 +43,7 @@ export function getConfig(env: NodeJS.ProcessEnv = process.env, projectRoot = PR
       throw new Error(name + " : identifiant HF invalide.");
     return value;
   };
-  const quantization = env.VISION_QUANTIZATION ?? "nf4";
+  const quantization = env.VISION_QUANTIZATION ?? "bf16";
   // Qwen3-ASR (native Transformers) transcribes; Qwen3-ForcedAligner times each word.
   const asrModel = model("ASR_MODEL", "Qwen/Qwen3-ASR-1.7B-hf");
   if (!/qwen3-asr/i.test(asrModel))
@@ -60,7 +60,8 @@ export function getConfig(env: NodeJS.ProcessEnv = process.env, projectRoot = PR
     throw new Error(`ASR_LANGUAGE : ${ASR_LANGUAGES.join(", ")}.`);
   const asrContext = env.ASR_CONTEXT ?? "title";
   if (!["title", "none"].includes(asrContext)) throw new Error("ASR_CONTEXT : title ou none.");
-  if (!["nf4", "bf16"].includes(quantization)) throw new Error("VISION_QUANTIZATION : nf4 ou bf16.");
+  // NF4 needs bitsandbytes (CUDA), absent on Apple Silicon.
+  if (quantization !== "bf16") throw new Error("VISION_QUANTIZATION : bf16 uniquement sur Apple Silicon.");
   const visionBackend = env.VISION_BACKEND ?? "llama_cpp";
   if (!["llama_cpp", "transformers"].includes(visionBackend))
     throw new Error("VISION_BACKEND : llama_cpp ou transformers.");
@@ -69,11 +70,9 @@ export function getConfig(env: NodeJS.ProcessEnv = process.env, projectRoot = PR
     throw new Error(
       "Le moteur natif validé utilise Qwen/Qwen3.5-9B. Choisir transformers pour un autre modèle.",
     );
-  const device = env.DEVICE ?? "cuda:0";
   const logLevel = env.LOG_LEVEL ?? "info";
   if (!["debug", "info", "warn", "error"].includes(logLevel))
     throw new Error("LOG_LEVEL : debug, info, warn ou error.");
-  if (!/^cuda:\d+$/.test(device)) throw new Error("DEVICE doit désigner un GPU CUDA, par exemple cuda:0.");
   const host = env.HOST ?? "127.0.0.1";
   if (!["127.0.0.1", "localhost", "::1"].includes(host))
     throw new Error("HOST doit être une adresse locale.");
@@ -142,7 +141,8 @@ export function getConfig(env: NodeJS.ProcessEnv = process.env, projectRoot = PR
     asrAlignerModel,
     asrLanguage,
     asrContext: asrContext as "title" | "none",
-    asrCompile: boolean("ASR_COMPILE", true),
+    // torch.compile needs Triton, which has no macOS build: opt-in only.
+    asrCompile: boolean("ASR_COMPILE", false),
     visionModel,
     visionBackend: visionBackend as "llama_cpp" | "transformers",
     nativeVisionDir: insideProject(
@@ -157,8 +157,8 @@ export function getConfig(env: NodeJS.ProcessEnv = process.env, projectRoot = PR
     frameMaxSide: integer("FRAME_MAX_SIDE", 1280, 320, 1920),
     visionMaxPixels: integer("VISION_MAX_PIXELS", 393216, 4096, 1048576),
     visionMaxNewTokens: integer("VISION_MAX_NEW_TOKENS", 1024, 128, 4096),
-    visionQuantization: quantization as "nf4" | "bf16",
-    device,
+    visionQuantization: quantization as "bf16",
+    device: "mps" as const,
     keepMedia: boolean("KEEP_MEDIA", false),
   };
 }

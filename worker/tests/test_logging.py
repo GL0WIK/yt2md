@@ -103,10 +103,9 @@ class LocalJournalTests(unittest.TestCase):
         self.assertEqual(entries[-1]["name"], "media.tool.failed")
         self.assertEqual(entries[-1]["fields"]["errorType"], "TimeoutExpired")
 
-    def test_gpu_snapshot_distinguishes_free_reserved_and_allocated_memory(self):
-        cuda = SimpleNamespace(mem_get_info=lambda _: (8, 24), memory_allocated=lambda _: 10,
-                               memory_reserved=lambda _: 12, max_memory_allocated=lambda _: 15)
-        self.assertEqual(gpu_fields(SimpleNamespace(cuda=cuda), "cuda:0"), {
-            "vramFreeBytes": 8, "vramTotalBytes": 24, "vramAllocatedBytes": 10,
-            "vramReservedBytes": 12, "vramPeakAllocatedBytes": 15,
+    def test_gpu_snapshot_reads_the_mps_budget_and_allocations(self):
+        mps = SimpleNamespace(recommended_max_memory=lambda: 24, driver_allocated_memory=lambda: 16,
+                              current_allocated_memory=lambda: 10)
+        self.assertEqual(gpu_fields(SimpleNamespace(mps=mps), "mps"), {
+            "vramFreeBytes": 8, "vramTotalBytes": 24, "vramAllocatedBytes": 10, "vramReservedBytes": 16,
         })

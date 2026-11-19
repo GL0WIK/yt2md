@@ -23,9 +23,9 @@ def main():
     args = parser.parse_args()
     if not re.fullmatch(r"[A-Za-z0-9_-]{11}", args.video_id) or args.group_index < 0:
         parser.error("Identifiant vidéo ou index de groupe invalide")
-    config = {"modelsDir": str(ROOT / "models"), "device": "cuda:0",
+    config = {"modelsDir": str(ROOT / "models"), "device": "mps",
               "asrModel": "Qwen/Qwen3-ASR-1.7B-hf", "asrAlignerModel": "Qwen/Qwen3-ForcedAligner-0.6B-hf", "asrLanguage": "fr", "visionModel": "Qwen/Qwen3.5-9B",
-              "visionQuantization": "nf4", "fps": 1, "groupFrames": 7,
+              "visionQuantization": "bf16", "fps": 1, "groupFrames": 7,
               "visionBackend": args.backend, "nativeVisionDir": str(ROOT / "models/native-vision"),
               "cacheDir": str(ROOT / ".smoke-tmp/vision/runtime"), "ffmpegBinary": "ffmpeg",
               "audioChunkSeconds": 60, "audioOverlapSeconds": 1, "frameMaxSide": 1280,

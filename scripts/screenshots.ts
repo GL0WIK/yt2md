@@ -152,7 +152,6 @@ const worker: LocalWorker = {
       name: "NVIDIA GeForce RTX 4090",
       totalVramBytes: 24 * 1024 ** 3,
       freeVramBytes: 22 * 1024 ** 3,
-      torchCuda: "12.8",
     },
   }),
   async analyze(video, signal, progress) {

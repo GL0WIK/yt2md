@@ -35,7 +35,7 @@ export type WorkerAnalysis = z.infer<typeof WorkerAnalysisSchema>;
 export type WorkerHealth = {
   ready: boolean;
   python?: string;
-  gpu?: { name: string; totalVramBytes: number; freeVramBytes: number; torchCuda: string } | null;
+  gpu?: { name: string; totalVramBytes: number; freeVramBytes: number } | null;
   packages?: Record<string, string>;
   models?: unknown;
   issues: string[];
