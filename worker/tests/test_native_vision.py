@@ -63,3 +63,51 @@ class NativeVisionTests(unittest.TestCase):
             new_asr, new_vision = stage_keys("source", {**config, "visionBackend": "llama_cpp"}, locks)
             self.assertEqual(new_asr, old_asr)
             self.assertNotEqual(new_vision, old_vision)
+
+
+class NativeDownloadTests(unittest.TestCase):
+    def build(self, folder, members):
+        import io, tarfile
+        archive = Path(folder) / "engine.tar.gz"
+        with tarfile.open(archive, "w:gz") as tar:
+            for name, kind, mode, target in members:
+                info = tarfile.TarInfo(name)
+                info.mode = mode
+                if kind == "file":
+                    info.size = 2
+                    tar.addfile(info, io.BytesIO(b"#!"))
+                else:
+                    info.type, info.linkname = tarfile.SYMTYPE, target
+                    tar.addfile(info)
+        return archive
+
+    def test_engine_is_the_pinned_macos_arm64_metal_build(self):
+        import native_download
+        self.assertEqual(native_download.FILES["llama-b11576-bin-macos-arm64.tar.gz"],
+                         "e46155b4dff22645df24cd46888e96fc46a417467b0c22983e58eae034fda81f")
+        self.assertFalse([name for name in native_download.FILES if "win" in name or "cudart" in name])
+        self.assertEqual(set(native_download.FILES), set(native_download.FILE_BYTES))
+        self.assertEqual(native_download.BINARY, "bin/llama-b11576/llama-server")
+
+    def test_extraction_keeps_the_executable_bit_and_relative_library_links(self):
+        import os
+        from native_download import extract_engine
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(dir=root) as folder:
+            archive = self.build(folder, [("llama-b1/llama-server", "file", 0o755, None),
+                                          ("llama-b1/libggml.0.26.0.dylib", "file", 0o755, None),
+                                          ("llama-b1/libggml.0.dylib", "link", 0o755, "libggml.0.26.0.dylib")])
+            target = Path(folder) / "bin"
+            extract_engine(archive, target)
+            self.assertTrue(os.access(target / "llama-b1/llama-server", os.X_OK))
+            self.assertEqual((target / "llama-b1/libggml.0.dylib").resolve(), (target / "llama-b1/libggml.0.26.0.dylib").resolve())
+
+    def test_extraction_refuses_members_or_links_outside_the_engine_folder(self):
+        from native_download import extract_engine
+        root = Path(__file__).resolve().parents[2]
+        for member in [("../evil", "file", 0o644, None), ("llama-b1/lib.dylib", "link", 0o755, "../../outside")]:
+            with tempfile.TemporaryDirectory(dir=root) as folder:
+                archive = self.build(folder, [member])
+                with self.assertRaises(RuntimeError):
+                    extract_engine(archive, Path(folder) / "bin")
+                self.assertFalse((Path(folder) / "evil").exists())
