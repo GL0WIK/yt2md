@@ -80,13 +80,20 @@ Contexte et décisions : `tasks/plan.md`.
 **Description :** télécharger uniquement les modèles audio, puis transcrire un vrai extrait sur MPS. On choisit le dtype (BF16 ou FP16 de repli sur MPS) et on active `PYTORCH_ENABLE_MPS_FALLBACK=1` si un opérateur manque. On mesure le facteur temps réel et la mémoire de pointe. C'est la tâche la plus risquée : si elle échoue, on revoit le plan avant d'aller plus loin.
 
 **Critères d'acceptation :**
-- [ ] `npm run models:download -- asr aligner` réussit
-- [ ] `scripts/smoke_asr.py` sur un extrait français de 1 à 2 min produit un texte cohérent avec des horodatages par mot
-- [ ] Mesures notées dans le plan : durée et facteur temps réel, mémoire de pointe, dtype retenu
+- [x] `npm run models:download -- asr aligner` réussit
+- [x] `scripts/smoke_asr.py` sur un extrait français de 1 à 2 min produit un texte cohérent avec des horodatages par mot
+- [x] Mesures notées dans le plan : durée et facteur temps réel, mémoire de pointe, dtype retenu
 
 **Vérification :**
-- [ ] `npm run test:python`
-- [ ] Contrôle manuel : relecture de la transcription et des horodatages (aucun mot à 0 s, ordre croissant)
+- [x] `npm run test:python`
+- [x] Contrôle manuel : relecture de la transcription et des horodatages (aucun mot à 0 s, ordre croissant)
+
+**Mesures (2026-11-19, M1 Pro 16 Go, voix française de synthèse `say`, 36 s) :**
+- BF16 : 21,5 s (1,7× le temps réel). FP16 : 15,4 s (2,4×), même texte → **FP16 retenu** (`ASR_DTYPE`, inclus dans la clé du cache ASR).
+- Seconde passe FP16, modèles déjà en cache disque : 11,8 s (3,1×). Chargement ASR 1,6 s + aligneur 0,9 s.
+- Mémoire : environ 8,4 Gio réservés par Metal pendant la génération ; empreinte de pointe du processus 9,4 Go ; tout est libéré au déchargement.
+- Aucun opérateur manquant sur MPS : `PYTORCH_ENABLE_MPS_FALLBACK` est inutile.
+- Erreurs sur la voix de synthèse : « Qwen » → « Coin », « horodatage » → « orthographe », « Apple » → « appelé ». Horodatages croissants, fin toujours après le début.
 
 **Dépendances :** T3
 
@@ -100,8 +107,8 @@ Contexte et décisions : `tasks/plan.md`.
 ---
 
 ## Checkpoint A : transcription sur Mac
-- [ ] `npm test`, `npm run test:python` et `npm run typecheck` passent
-- [ ] `npm run doctor` : seul le modèle vision manque
+- [x] `npm test`, `npm run test:python` et `npm run typecheck` passent
+- [x] `npm run doctor` : seul le modèle vision manque
 - [ ] Facteur temps réel de l'ASR jugé acceptable par l'utilisateur
 - [ ] **Revue avec l'utilisateur avant la phase 2**
 

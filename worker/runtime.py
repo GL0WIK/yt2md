@@ -22,12 +22,14 @@ ASR_BATCH_SIZE = 8
 ASR_TOKENS_PER_SECOND = 12
 ASR_MIN_NEW_TOKENS = 64
 ASR_CONTEXT_MAX_CHARS = 400
+# M1 has no hardware BF16: on MPS, FP16 gave the same French transcript 1.4x faster (2.4x vs 1.7x real time).
+ASR_DTYPE = "float16"
 VAD_SETTINGS = {"min_speech_duration_ms": 250, "min_silence_duration_ms": 300, "speech_pad_ms": 200,
                 "max_speech_duration_s": MAX_SEGMENT_SECONDS}
 # Everything that shapes a transcript besides the models and config; hashed into the ASR cache key.
 ASR_SETTINGS = {"vad": VAD_SETTINGS, "batchSize": ASR_BATCH_SIZE, "maxSegmentSeconds": MAX_SEGMENT_SECONDS,
                 "tokensPerSecond": ASR_TOKENS_PER_SECOND, "minNewTokens": ASR_MIN_NEW_TOKENS,
-                "contextMaxChars": ASR_CONTEXT_MAX_CHARS, "decoding": "greedy"}
+                "contextMaxChars": ASR_CONTEXT_MAX_CHARS, "decoding": "greedy", "dtype": ASR_DTYPE}
 VISION_SAMPLING = {"do_sample": True, "temperature": 0.7, "top_p": 0.8, "top_k": 20, "repetition_penalty": 1.1}
 # Config fields that require reloading models or restarting the native engine when they change.
 MODEL_CONFIG_KEYS = ("device", "asrModel", "asrAlignerModel", "asrCompile", "visionModel", "visionBackend", "visionQuantization",
@@ -306,7 +308,7 @@ class LocalRuntime:
         if role == "vision":
             from vision_monitor import check_vision_memory
             check_vision_memory(torch, self.config)
-        kwargs = {"dtype": torch.bfloat16, "device_map": {"": self.config["device"]},
+        kwargs = {"dtype": getattr(torch, ASR_DTYPE) if role == "asr" else torch.bfloat16, "device_map": {"": self.config["device"]},
                   "local_files_only": True, "trust_remote_code": False, "attn_implementation": "sdpa"}
         if role == "asr":
             # Both small models stay on the GPU for the whole audio stage: transcription, then alignment.
@@ -315,7 +317,7 @@ class LocalRuntime:
                 with stage("model.processor.load", "Chargement du processeur local.", role=part):
                     processor = AutoProcessor.from_pretrained(folder, local_files_only=True, trust_remote_code=False)
                 with stage("model.load", "Chargement des poids sur le GPU.", role=part,
-                           modelId=self.locks[part]["modelId"], quantization="bf16",
+                           modelId=self.locks[part]["modelId"], quantization="fp16",
                            heartbeat_fields=lambda: gpu_fields(torch, self.config["device"])):
                     model = cls.from_pretrained(folder, **kwargs).eval()
                 if model.config.model_type != "qwen3_asr":

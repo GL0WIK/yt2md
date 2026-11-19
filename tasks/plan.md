@@ -58,7 +58,7 @@ Le détail de chaque tâche (critères, vérification, fichiers) est dans `tasks
 
 ### Phase 1 : transcription (risque le plus élevé, traitée en premier)
 - [x] T3 : CUDA → MPS dans config, worker et doctor
-- [ ] T4 : Qwen3-ASR + aligneur réels sur MPS
+- [x] T4 : Qwen3-ASR + aligneur réels sur MPS
 
 ### Checkpoint A : la transcription tourne sur le Mac
 
