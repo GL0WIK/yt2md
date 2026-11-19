@@ -29,14 +29,16 @@ Contexte et décisions : `tasks/plan.md`.
 **Description :** `npm run python:setup` doit fonctionner sur macOS arm64. On installe torch/torchaudio/torchvision 2.11 depuis PyPI (roues MPS) au lieu de l'index `cu128`. La vérification `--reuse-system-torch` contrôle MPS au lieu de CUDA. `bitsandbytes` et `triton-windows` sont retirés des dépendances. On fixe ensuite l'état des tests existants sur Mac, comme base de comparaison.
 
 **Critères d'acceptation :**
-- [ ] `uv python install 3.12`, puis `uv run --python 3.12 --no-project python scripts/setup_runtime.py` crée `.venv` sans erreur
-- [ ] Dans le venv : `python -c "import torch; assert torch.backends.mps.is_available()"` passe
-- [ ] Plus aucune mention de `cu128` ou de CUDA dans `setup_runtime.py` et `requirements.txt`
+- [x] `uv python install 3.12`, puis `uv run --python 3.12 --no-project python scripts/setup_runtime.py` crée `.venv` sans erreur
+- [x] Dans le venv : `python -c "import torch; assert torch.backends.mps.is_available()"` passe
+- [x] Plus aucune mention de `cu128` ou de CUDA dans `setup_runtime.py` et `requirements.txt`
 
 **Vérification :**
-- [ ] `source .venv/bin/activate && npm install && npm test` : résultat noté (référence)
-- [ ] `npm run test:python` : résultat noté, avec la liste des échecs propres à macOS, s'il y en a
-- [ ] `npm run typecheck` passe
+- [x] `source .venv/bin/activate && npm install && npm test` : résultat noté (référence)
+- [x] `npm run test:python` : résultat noté, avec la liste des échecs propres à macOS, s'il y en a
+
+**Référence (2026-11-19) :** typecheck OK · vitest 86/86 · unittest 55 OK, 1 ignoré (`test_job_object_kills_the_engine_with_the_worker`, Windows seulement, supprimé en T6) · torch 2.11.0, MPS disponible · transformers 5.19.0
+- [x] `npm run typecheck` passe
 
 **Dépendances :** T1
 

@@ -1,12 +1,9 @@
-# PyTorch CUDA est installé séparément par scripts/setup_runtime.py.
+# Roues PyPI macOS arm64 : PyTorch inclut MPS (Apple Silicon).
 torch==2.11.0
 torchaudio==2.11.0
 torchvision==0.26.0
 transformers==5.19.0
-# torch.compile de Qwen3-ASR (ASR_COMPILE) ; Linux reçoit Triton avec PyTorch.
-triton-windows==3.6.0.post26; sys_platform == "win32"
 accelerate>=1.10,<2
-bitsandbytes==0.50.2
 qwen-vl-utils==0.0.14
 lm-format-enforcer==0.11.3
 silero-vad==6.2.3

@@ -54,7 +54,7 @@ Le détail de chaque tâche (critères, vérification, fichiers) est dans `tasks
 
 ### Phase 0 : socle
 - [x] T1 : fork public et branche `macos-apple-silicon`
-- [ ] T2 : runtime Python installable sur Mac et tests de référence
+- [x] T2 : runtime Python installable sur Mac et tests de référence
 
 ### Phase 1 : transcription (risque le plus élevé, traitée en premier)
 - [ ] T3 : CUDA → MPS dans config, worker et doctor
